@@ -1,0 +1,26 @@
+{
+  "name": "gita_final_project",
+  "version": "1.0.0",
+  "description": "The final project for GITA node course",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mancho-ged/gita_final_project.git"
+  },
+  "keywords": [
+    "file-sharing"
+  ],
+  "author": "Manana Gedevanishvili <mgwebstudio.ge@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mancho-ged/gita_final_project/issues"
+  },
+  "homepage": "https://github.com/mancho-ged/gita_final_project#readme",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
