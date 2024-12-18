@@ -4,7 +4,7 @@
   "description": "The final project for GITA node course",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +21,10 @@
   },
   "homepage": "https://github.com/mancho-ged/gita_final_project#readme",
   "dependencies": {
-    "express": "^4.21.1"
+    "body-parser": "^1.20.3",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^11.0.3",
+    "zod": "^3.24.1"
   }
 }
