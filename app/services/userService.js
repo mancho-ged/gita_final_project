@@ -3,7 +3,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 // Directory to store user data
-const USERS_DIR = path.join(__dirname, 'users');
+const USERS_DIR = path.join(__dirname, '..', 'users');
 
 // Ensure the users directory exists
 if (!fs.existsSync(USERS_DIR)) {
@@ -16,7 +16,14 @@ const getUserFilePath = (id) => path.join(USERS_DIR, `user_${id}.json`);
 // Create a new user
 const createUser = (username, email, password) => {
   const userId = uuidv4();
-  const user = { id: userId, username, email, password };
+  const user = {
+    id: userId,
+    username,
+    email,
+    password,
+    folders: [],
+    files: [],
+  };
   const userFilePath = getUserFilePath(userId);
   try {
     fs.writeFileSync(userFilePath, JSON.stringify(user, null, 2));

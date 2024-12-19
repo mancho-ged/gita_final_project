@@ -1,3 +1,4 @@
 /node_modules
-/app/users
-/app/user_files
+/app/users/*
+/app/user_files/*
+/app/uploads/*

@@ -2,7 +2,7 @@ const fs = require('fs/promises');
 const path = require('path');
 
 // Root directory for user files
-const USER_FILES_DIR = path.join(__dirname, 'user_files');
+const USER_FILES_DIR = path.join(__dirname, '..', 'uploads');
 
 // Ensure the root folder exists
 (async () => {

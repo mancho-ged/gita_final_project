@@ -1,7 +1,11 @@
 var express = require('express');
 var router = express.Router();
 const z = require('zod');
+const multer = require('multer');
 const jwt = require('jsonwebtoken');
+const auth = require('../utils/auth');
+const path = require('path');
+
 const {
   createUser,
   findUserByEmail,
@@ -13,14 +17,16 @@ const {
   deleteItem,
 } = require('../services/folderService');
 
-// Secret for JWT
-const JWT_SECRET = 'your_jwt_secret_key';
+const {
+  uploadFile,
+  attachMeta,
+  getMeta,
+} = require('../services/fileService.js');
 
-const userSchema = z.object({
-  username: z.string().min(3).max(25),
-  email: z.string().email(),
-  age: z.number().int().positive().gte(12),
-});
+// Secret for JWT
+const JWT_SECRET = 'your_jwt_secret';
+
+const upload = multer({ dest: path.join(__dirname, '..', 'uploads') });
 
 // Route: Register User
 router.post('/create', (req, res) => {
@@ -97,7 +103,7 @@ router.get('/space', async (req, res) => {
 });
 
 // PUT /api/v1/user/space/create - Create a file or folder
-router.put('/space/create', (req, res) => {
+router.put('/space/create', async (req, res) => {
   const { userId, itemPath, isFolder = true } = req.body;
 
   if (!userId || !itemPath) {
@@ -107,7 +113,7 @@ router.put('/space/create', (req, res) => {
   }
 
   try {
-    createItem(userId, itemPath, isFolder);
+    await createItem(userId, itemPath, isFolder);
     res.status(201).json({ message: 'Item created successfully' });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -115,7 +121,7 @@ router.put('/space/create', (req, res) => {
 });
 
 // DELETE /api/v1/user/space/file - Delete a file or folder
-router.delete('/space/file', (req, res) => {
+router.delete('/space/file', async (req, res) => {
   const { userId, itemPath } = req.body;
 
   if (!userId || !itemPath) {
@@ -131,5 +137,15 @@ router.delete('/space/file', (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+// File Management Routes
+router.post(
+  '/space/upload',
+  auth.authenticateUser,
+  upload.single('file'),
+  uploadFile
+);
+router.post('/space/meta', auth.authenticateUser, attachMeta);
+router.get('/space/meta', auth.authenticateUser, getMeta);
 
 module.exports = router;

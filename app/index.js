@@ -1,15 +1,13 @@
 const express = require('express');
 const userRouter = require('./routes/user');
 const path = require('path');
+const bodyParser = require('body-parser');
 const fs = require('fs');
 
 const app = express();
 
 app.use(express.json());
-
-// POST /api/v1/user/create (register)
-// POST /api/v1/user/validate (validation)
-// POST /api/v1/user/login -> This should return a JWT that will be used in the next sequence of requests.
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Directory to store user data
 const USERS_DIR = path.join(__dirname, 'users');
