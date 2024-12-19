@@ -1,120 +1,77 @@
-const fs = require('fs'); // Use callback-based API
+const fs = require('fs/promises');
 const path = require('path');
 
-// Directory to store user files
+// Root directory for user files
 const USER_FILES_DIR = path.join(__dirname, 'user_files');
 
-// Ensure the user_files directory exists
-if (!fs.existsSync(USER_FILES_DIR)) {
-  fs.mkdirSync(USER_FILES_DIR, { recursive: true });
-}
+// Ensure the root folder exists
+(async () => {
+  try {
+    await fs.mkdir(USER_FILES_DIR, { recursive: true });
+  } catch (err) {
+    console.error('Error creating user_files directory:', err.message);
+  }
+})();
 
-// Helper: Get a user's root folder
-const getUserRoot = (userId) => path.join(USER_FILES_DIR, `user_${userId}`);
+// Helper: Get user-specific folder
+const getUserFolder = (userId) => path.join(USER_FILES_DIR, `user_${userId}`);
 
-// Ensure user root folder exists
-const ensureUserRoot = (userId, callback) => {
-  const userRoot = getUserRoot(userId);
-  fs.mkdir(userRoot, { recursive: true }, (err) => {
-    if (err) {
-      console.error('Error creating user root folder:', err.message);
-      return callback(err);
-    }
-    callback(null, userRoot);
-  });
+// Ensure the user-specific folder exists
+const ensureUserFolder = async (userId) => {
+  const userFolder = getUserFolder(userId);
+  try {
+    await fs.mkdir(userFolder, { recursive: true });
+  } catch (err) {
+    console.error('Error creating user folder:', err.message);
+    throw new Error('Failed to ensure user folder');
+  }
+  return userFolder;
 };
 
-// Create a folder or file
-const createItem = (userId, itemPath, isFolder, callback) => {
-  ensureUserRoot(userId, (err, userRoot) => {
-    if (err) return callback(err);
+// Create a file or folder
+const createItem = async (userId, itemPath, isFolder = true) => {
+  const userFolder = await ensureUserFolder(userId);
+  const fullPath = path.join(userFolder, itemPath);
 
-    const fullPath = path.join(userRoot, itemPath);
-
-    if (isFolder) {
-      fs.mkdir(fullPath, (err) => {
-        if (err) {
-          console.error('Error creating folder:', err.message);
-          return callback(err);
-        }
-        callback(null);
-      });
-    } else {
-      fs.writeFile(fullPath, '', (err) => {
-        if (err) {
-          console.error('Error creating file:', err.message);
-          return callback(err);
-        }
-        callback(null);
-      });
-    }
-  });
+  if (isFolder) {
+    await fs.mkdir(fullPath);
+  } else {
+    await fs.writeFile(fullPath, '');
+  }
 };
 
-// List all items in a folder
-const listItems = (userId, folderPath, callback) => {
-  ensureUserRoot(userId, (err, userRoot) => {
-    if (err) return callback(err);
+// List items in a user's folder
+const listItems = async (userId, folderPath = '') => {
+  const userFolder = await ensureUserFolder(userId);
+  const fullPath = path.join(userFolder, folderPath);
 
-    const fullPath = path.join(userRoot, folderPath || '');
-
-    fs.readdir(fullPath, { withFileTypes: true }, (err, items) => {
-      if (err) {
-        console.error('Error listing items:', err.message);
-        return callback(err);
-      }
-      const result = items.map((item) => ({
-        name: item.name,
-        type: item.isDirectory() ? 'folder' : 'file',
-      }));
-      callback(null, result);
-    });
-  });
+  const items = await fs.readdir(fullPath, { withFileTypes: true });
+  console.log(items);
+  if (items.length === 0) {
+    console.log('The directory is empty');
+  }
+  return items.map((item) => ({
+    name: item.name,
+    type: item.isDirectory() ? 'folder' : 'file',
+  }));
 };
 
 // Delete a file or folder
-const deleteItem = (userId, itemPath, callback) => {
-  ensureUserRoot(userId, (err, userRoot) => {
-    if (err) return callback(err);
+const deleteItem = async (userId, itemPath) => {
+  const userFolder = await ensureUserFolder(userId);
+  const fullPath = path.join(userFolder, itemPath);
 
-    const fullPath = path.join(userRoot, itemPath);
+  const stats = await fs.lstat(fullPath);
 
-    fs.lstat(fullPath, (err, stats) => {
-      if (err) {
-        console.error('Error getting item stats:', err.message);
-        return callback(err);
-      }
-
-      if (stats.isDirectory()) {
-        fs.readdir(fullPath, (err, contents) => {
-          if (err) {
-            console.error('Error reading folder contents:', err.message);
-            return callback(err);
-          }
-
-          if (contents.length > 0) {
-            return callback(new Error('Folder is not empty'));
-          }
-
-          fs.rmdir(fullPath, (err) => {
-            if (err) {
-              console.error('Error deleting folder:', err.message);
-              return callback(err);
-            }
-            callback(null);
-          });
-        });
-      } else {
-        fs.unlink(fullPath, (err) => {
-          if (err) {
-            console.error('Error deleting file:', err.message);
-            return callback(err);
-          }
-          callback(null);
-        });
-      }
-    });
-  });
+  if (stats.isDirectory()) {
+    const contents = await fs.readdir(fullPath);
+    if (contents.length > 0) {
+      throw new Error('Folder is not empty');
+    }
+    await fs.rmdir(fullPath);
+  } else {
+    await fs.unlink(fullPath);
+  }
 };
 
 module.exports = {

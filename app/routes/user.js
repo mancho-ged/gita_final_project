@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const z = require('zod');
+const jwt = require('jsonwebtoken');
 const {
   createUser,
   findUserByEmail,
@@ -76,7 +77,7 @@ router.post('/login', (req, res) => {
 });
 
 // GET /api/v1/user/space - List all items
-router.get('/space', (req, res) => {
+router.get('/space', async (req, res) => {
   const { userId, folderPath = '' } = req.query;
 
   if (!userId) {
@@ -84,7 +85,7 @@ router.get('/space', (req, res) => {
   }
 
   try {
-    const items = listItems(userId, folderPath);
+    const items = await listItems(userId, folderPath);
     res.status(200).json({ items });
   } catch (err) {
     res.status(400).json({ error: err.message });
