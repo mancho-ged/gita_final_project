@@ -1,5 +1,7 @@
 # File-sharing Service
 
+start project with npm start
+
 ## Testing the endpoints
 
 Register the user
