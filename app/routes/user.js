@@ -6,8 +6,12 @@ const {
   createUser,
   findUserByEmail,
   authenticateUser,
-} = require('../userService');
-const { createItem, listItems, deleteItem } = require('../folderService');
+} = require('../services/userService');
+const {
+  createItem,
+  listItems,
+  deleteItem,
+} = require('../services/folderService');
 
 // Secret for JWT
 const JWT_SECRET = 'your_jwt_secret_key';
